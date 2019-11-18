@@ -2,6 +2,7 @@ package cpu;
 
 import cache.Cache;
 import cache.instruction.CacheInstruction;
+import common.Clocked;
 import instruction.Instruction;
 import instruction.InstructionType;
 
@@ -11,7 +12,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public final class Cpu {
+public final class Cpu implements Clocked {
 
     private final Cache cache;
 
@@ -19,14 +20,13 @@ public final class Cpu {
     private CpuState state;
     private long cycleCount;
     private int instructionCount;
-    private String input_file;
     private int executingCyclesLeft;
 
     private int totalComputingCycles;
     private int totalIdleCycles;
     private int numLoadStore;
 
-    public Cpu(Cache cache, String input_file_path) {
+    public Cpu(Cache cache) {
 
         this.cache = cache;
         this.cycleCount = 0;
@@ -35,10 +35,10 @@ public final class Cpu {
         instructions = new LinkedList<>();
         executingCyclesLeft = 0;
 
-        input_file = input_file_path;
         totalComputingCycles = 0;
         totalIdleCycles = 0;
         numLoadStore = 0;
+
     }
 
     private Queue<Instruction> getInstructionsFromFile(String filePath) throws IOException {
@@ -64,9 +64,10 @@ public final class Cpu {
         return instructions;
 
 
+
     }
 
-    public void executeOneCycle() {
+    public void runForOneCycle() {
         switch (state) {
             case IDLE:
                 Instruction instruction = instructions.poll();
@@ -141,6 +142,9 @@ public final class Cpu {
         return numLoadStore;
     }
 
+    public boolean finishedExecution(){
+        return this.instructions.isEmpty() && this.state == CpuState.IDLE;
+    }
     private void setState(CpuState state) {
         this.state = state;
     }

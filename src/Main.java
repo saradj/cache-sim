@@ -43,8 +43,8 @@ public final class Main {
 
         for (int i = 0; i < Constants.NUM_CPUS; i++) {
             Cache cache = protocol == Protocol.MESI ?
-                    new MesiCache(cacheSize, blockSize, associativity) :
-                    new DragonCache(cacheSize, blockSize, associativity);
+                    new MesiCache(i,cacheSize, blockSize, associativity) :
+                    new DragonCache(i, cacheSize, blockSize, associativity);
             Cpu p = new Cpu(cache);
             Queue<Instruction> instructions = InstructionParser.parseInstructions(filenames[i]);
             p.setInstructions(instructions);
@@ -54,12 +54,12 @@ public final class Main {
             bus.addCache(cache);
         }
 
-        runUntilEnd(processors,caches,bus);
+        runUntilEnd(processors, caches, bus);
     }
 
-    private static void runUntilEnd(List<Cpu> processors,List<Cache>caches,Bus bus){
+    private static void runUntilEnd(List<Cpu> processors, List<Cache> caches, Bus bus) {
 
-        while (!allFinished(processors)){
+        while (!allFinished(processors)) {
             bus.runForOneCycle();
             caches.forEach(c -> c.runForOneCycle());
             Collections.shuffle(processors);
@@ -67,7 +67,7 @@ public final class Main {
         }
     }
 
-    private static boolean allFinished(List <Cpu> processors){
+    private static boolean allFinished(List<Cpu> processors) {
         return processors.stream().allMatch(p -> p.finishedExecution());
     }
 }

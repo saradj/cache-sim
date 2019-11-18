@@ -4,9 +4,12 @@ import bus.Bus;
 import bus.Request;
 import cache.instruction.CacheInstruction;
 import cache.lru.LruQueue;
+import common.Clocked;
 import cpu.Cpu;
 
-public abstract class Cache {
+import java.time.Clock;
+
+public abstract class Cache implements Clocked {
 
     private final int cacheSize;
     private final int blockSize;
