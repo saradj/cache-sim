@@ -55,6 +55,7 @@ public final class Main {
         }
 
         runUntilEnd(processors,caches,bus);
+        printResults (processors,caches,bus);
     }
 
     private static void runUntilEnd(List<Cpu> processors,List<Cache>caches,Bus bus){
@@ -69,5 +70,9 @@ public final class Main {
 
     private static boolean allFinished(List <Cpu> processors){
         return processors.stream().allMatch(p -> p.finishedExecution());
+    }
+
+    private static void printResults(List<Cpu> processors,List<Cache>caches,Bus bus){
+
     }
 }
