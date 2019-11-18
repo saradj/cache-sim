@@ -1,5 +1,6 @@
 package cache.mesi;
 
+import bus.BusEvent;
 import cache.CacheBlock;
 
 public final class MesiCacheBlock extends CacheBlock {
@@ -11,8 +12,17 @@ public final class MesiCacheBlock extends CacheBlock {
         mesiState = MesiState.INVALID;
     }
 
+    public MesiState getMesiState() {
+        return mesiState;
+    }
+
+    public void setMesiState(MesiState mesiState) {
+        this.mesiState = mesiState;
+    }
+
     @Override
     public void update(BusEvent busEvent) {
 
     }
+
 }

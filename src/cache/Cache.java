@@ -1,5 +1,6 @@
 package cache;
 
+import bus.Bus;
 import bus.Request;
 import cache.instruction.CacheInstruction;
 import cache.lru.LruQueue;
@@ -16,8 +17,11 @@ public abstract class Cache {
     private final LruQueue[] lruQueues;
     protected final int numLines;
     protected CacheBlock[][] cacheBlocks;
+    private final int id;
+    private Bus bus;
 
-    public Cache(int cacheSize, int blockSize, int associativity) {
+    public Cache(int id, int cacheSize, int blockSize, int associativity) {
+        this.id=id;
         this.cacheSize = cacheSize;
         this.blockSize = blockSize;
         this.associativity = associativity;
@@ -29,17 +33,19 @@ public abstract class Cache {
         }
     }
 
+    public int getId(){
+        return id;
+    }
     public void notifyOver() {
     }
 
 
-    public int getState() {
-        return 0;
+
+    public void linkBus(Bus bus){
+        this.bus=bus;
     }
 
-    public void notifyChange(Request processingRequest) {
-
-    }
+    public abstract void notifyChange(Request processingRequest) ;
 
     public boolean containsBlock(int address) {
         return true;
@@ -53,6 +59,9 @@ public abstract class Cache {
 
     private int getLineNumber(int address) {
         return address % numLines;
+    }
+    public Bus getBus(){
+        return bus;
     }
 
     public void linkCpu(Cpu p) {

@@ -19,6 +19,7 @@ public class Bus {
     }
     public void addCache(Cache cache){
         caches.add(cache);
+        cache.linkBus(this);
     }
     public void requestMessage(Request request){
         requests.add(request);
@@ -40,7 +41,7 @@ public class Bus {
         }
         if(processingRequest.getCyclesToExecute()==0) {
             executeTransition(processingRequest);
-            processingRequest.getSender().notifyOver();
+            caches.get(processingRequest.getSenderId()).notifyOver();
             processingRequest=null;
             return;
         }
@@ -52,6 +53,17 @@ public class Bus {
             cache.notifyChange(processingRequest);
         }
     }
+
+    public boolean askOthers(Request processingRequest) {
+        int addressNeeded= processingRequest.getAddress();
+        int senderId=processingRequest.getSenderId();
+        for(Cache cache:caches){
+            if(cache.getId()!=senderId&&cache.containsBlock(addressNeeded))
+                return true;
+        }
+        return false;
+    }
+
 
 //    private void executeTransition(Request processingRequest) {
 //        if(protocol==Protocol.MESI){

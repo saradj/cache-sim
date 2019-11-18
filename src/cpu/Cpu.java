@@ -39,8 +39,6 @@ public final class Cpu {
         totalComputingCycles = 0;
         totalIdleCycles = 0;
         numLoadStore = 0;
-
-
     }
 
     private Queue<Instruction> getInstructionsFromFile(String filePath) throws IOException {
