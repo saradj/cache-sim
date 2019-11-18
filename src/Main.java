@@ -36,17 +36,17 @@ public final class Main {
         List<Cache> caches = new ArrayList<Cache>();
         Bus bus = new Bus();
 
-        String[] filenames = new String[Constants.NUM_CPUS];
-        for (int i = 0; i < Constants.NUM_CPUS; i++) {
-            filenames[i] = traceFile + "_" + i + ".data";
-        }
+
+        File dir = new File(traceFile);
+        File[] files = dir.listFiles();
+
 
         for (int i = 0; i < Constants.NUM_CPUS; i++) {
             Cache cache = protocol == Protocol.MESI ?
                     new MesiCache(i,cacheSize, blockSize, associativity) :
                     new DragonCache(i,cacheSize, blockSize, associativity);
             Cpu p = new Cpu(cache);
-            Queue<Instruction> instructions = InstructionParser.parseInstructions(filenames[i]);
+            Queue<Instruction> instructions = InstructionParser.parseInstructions(files[i].getAbsolutePath());
             p.setInstructions(instructions);
             processors.add(p);
             caches.add(cache);

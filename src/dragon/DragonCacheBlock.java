@@ -8,7 +8,7 @@ public class DragonCacheBlock extends CacheBlock {
     private DragonState state;
     public DragonCacheBlock(int size) {
         super(size);
-        this.state=DragonState.SC;
+        this.state=DragonState.NOT_IN_CACHE;
     }
 
     public DragonState getState() {
