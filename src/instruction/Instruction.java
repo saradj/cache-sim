@@ -1,9 +1,10 @@
 package instruction;
 
-public final class Instruction {
+public class Instruction {
 
     private final InstructionType type;
     private final int secondField;
+
 
     public InstructionType getType() {
         return type;

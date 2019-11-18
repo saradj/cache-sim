@@ -1,11 +1,15 @@
 package cache.instruction;
 
-public final class CacheInstruction {
+import instruction.Instruction;
+import instruction.InstructionType;
+
+public final class CacheInstruction extends Instruction {
 
     private final int address;
-    private final CacheInstructionType cacheInstructionType;
+    private final InstructionType cacheInstructionType;
 
-    public CacheInstruction(CacheInstructionType cacheInstructionType,int address) {
+    public CacheInstruction(InstructionType cacheInstructionType, int address) {
+        super(cacheInstructionType,address);
         this.address = address;
         this.cacheInstructionType = cacheInstructionType;
     }
@@ -14,7 +18,7 @@ public final class CacheInstruction {
         return address;
     }
 
-    public CacheInstructionType getCacheInstructionType() {
+    public InstructionType getCacheInstructionType() {
         return cacheInstructionType;
     }
 }

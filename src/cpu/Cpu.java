@@ -2,11 +2,13 @@ package cpu;
 
 import cache.Cache;
 import cache.instruction.CacheInstruction;
-import cache.instruction.CacheInstructionType;
 import instruction.Instruction;
+import instruction.InstructionType;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.LinkedList;
-
 import java.util.Queue;
 
 public final class Cpu {
@@ -17,49 +19,74 @@ public final class Cpu {
     private CpuState state;
     private long cycleCount;
     private int instructionCount;
-
+    private String input_file;
     private int executingCyclesLeft;
 
-    public Cpu(Cache cache) {
+    public Cpu(Cache cache, String input_file_path) {
         this.cache = cache;
         this.cycleCount = 0;
         this.instructionCount = 0;
         this.state = CpuState.IDLE;
         instructions = new LinkedList<>();
         executingCyclesLeft = 0;
+        input_file = input_file_path;
+
     }
 
-    public void executeOneCycle (){
-        switch (state){
+    private Queue<Instruction> getInstructionsFromFile(String filePath) throws IOException {
+        Queue<Instruction> instructions = new LinkedList<Instruction>();
+        BufferedReader instStream = new BufferedReader(new FileReader(filePath));
+        String line;
+        String[] lineTokens;
+        if ((line = instStream.readLine()) != null) {
+            lineTokens = line.split(" ");
+            switch (Integer.parseInt(lineTokens[0])) {
+                case 0://load
+                    instructions.add(new CacheInstruction(InstructionType.READ, Integer.parseInt(lineTokens[1])));
+                    break;
+                case 1://store
+                    instructions.add(new CacheInstruction(InstructionType.WRITE, Integer.parseInt(lineTokens[1])));
+                    break;
+                case 2://other
+                    instructions.add(new Instruction(InstructionType.OTHER, Integer.parseInt(lineTokens[1])));
+                default:
+                    break;
+            }
+        }
+        return instructions;
+    }
+
+    public void executeOneCycle() {
+        switch (state) {
             case IDLE:
                 Instruction instruction = instructions.poll();
-                if (instruction != null){
-                    executeInstruction (instruction);
-                    instructionCount ++;
+                if (instruction != null) {
+                    executeInstruction(instruction);
+                    instructionCount++;
                 }
                 break;
             case BLOCKING:
                 break;
             case EXECUTING:
-                executingCyclesLeft --;
-                if (executingCyclesLeft == 0){
+                executingCyclesLeft--;
+                if (executingCyclesLeft == 0) {
                     setState(CpuState.IDLE);
                 }
         }
-        cycleCount ++;
+        cycleCount++;
     }
 
     private void executeInstruction(Instruction instruction) {
-        switch (instruction.getType()){
+        switch (instruction.getType()) {
             case READ: {
-                CacheInstruction cacheInstruction = new CacheInstruction(CacheInstructionType.READ,
+                CacheInstruction cacheInstruction = new CacheInstruction(InstructionType.READ,
                         instruction.getSecondField());
                 cache.ask(cacheInstruction);
                 setState(CpuState.BLOCKING);
                 break;
             }
             case WRITE: {
-                CacheInstruction cacheInstruction = new CacheInstruction(CacheInstructionType.WRITE,
+                CacheInstruction cacheInstruction = new CacheInstruction(InstructionType.WRITE,
                         instruction.getSecondField());
                 cache.ask(cacheInstruction);
                 setState(CpuState.BLOCKING);
@@ -78,7 +105,7 @@ public final class Cpu {
     }
 
 
-    public void wake(){
+    public void wake() {
         assert (this.state == CpuState.BLOCKING);
         setState(CpuState.IDLE);
     }

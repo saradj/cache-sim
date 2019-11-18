@@ -1,6 +1,8 @@
 
 package cache.instruction;
 
-public enum CacheInstructionType {
+import instruction.InstructionType;
+
+public enum CacheInstructionType  {
     READ, WRITE
 }

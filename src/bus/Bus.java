@@ -48,58 +48,64 @@ public class Bus {
     }
 
     private void executeTransition(Request processingRequest) {
-        if(protocol==Protocol.MESI){
-            switch (processingRequest.getBusEvent()){
-
-                case BusRd: switch (processingRequest.getSender().getState()){
-                    case 0://case invalid and rd go to shared, must notify modified
-                        for(Cache c: caches){
-                            c.notifyChange(processingRequest);
-                        }
-                }
-                    break;
-
-                case BusRdX:
-                    switch (processingRequest.getSender().getState()){
-                        case 0: //invalid
-                             for(Cache c: caches){
-                            c.notifyChange(processingRequest);
-                             }
-                             break;
-                        case 1: // exclusive only move this to modified
-                            processingRequest.getSender().notifyChange(processingRequest);
-                            break;
-                        case 2: //shared must move to modified and invalidate all others
-                            processingRequest.getSender().notifyChange(processingRequest);
-                            invalidateAllOther(processingRequest.getSender());
-                            break;
-                        case 3: //modified nothing happens!
-                            break;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }else //dragon
-            switch (processingRequest.getBusEvent()){
-
-                case BusRd:
-                    break;
-                case BusUpd:
-                    break;
-                case Flush:
-                    break;
-            }
-    }
-
-    private void invalidateAllOther(Request request) {
-        for(Cache c:caches){
-            if(c.containsBlock(request.getAddress())&&
-                    !c.equals(request.getSender()))
-              //  c.getBlock(request.getAddress()).setState(Invalid);
-                return;
+        for(Cache cache: caches){
+            cache.notifyChange(processingRequest);
         }
     }
+
+//    private void executeTransition(Request processingRequest) {
+//        if(protocol==Protocol.MESI){
+//            switch (processingRequest.getBusEvent()){
+//
+//                case BusRd: switch (processingRequest.getSender().getState()){
+//                    case 0://case invalid and rd go to shared, must notify modified
+//                        for(Cache c: caches){
+//                            c.notifyChange(processingRequest);
+//                        }
+//                }
+//                    break;
+//
+//                case BusRdX:
+//                    switch (processingRequest.getSender().getState()){
+//                        case 0: //invalid
+//                             for(Cache c: caches){
+//                            c.notifyChange(processingRequest);
+//                             }
+//                             break;
+//                        case 1: // exclusive only move this to modified
+//                            processingRequest.getSender().notifyChange(processingRequest);
+//                            break;
+//                        case 2: //shared must move to modified and invalidate all others
+//                            processingRequest.getSender().notifyChange(processingRequest);
+//                            invalidateAllOther(processingRequest.getSender());
+//                            break;
+//                        case 3: //modified nothing happens!
+//                            break;
+//                    }
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }else //dragon
+//            switch (processingRequest.getBusEvent()){
+//
+//                case BusRd:
+//                    break;
+//                case BusUpd:
+//                    break;
+//                case Flush:
+//                    break;
+//            }
+//    }
+//
+//    private void invalidateAllOther(Request request) {
+//        for(Cache c:caches){
+//            if(c.containsBlock(request.getAddress())&&
+//                    !c.equals(request.getSender()))
+//              //  c.getBlock(request.getAddress()).setState(Invalid);
+//                return;
+//        }
+//    }
 
 
 }
