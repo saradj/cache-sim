@@ -38,7 +38,7 @@ public final class Main {
 
         String[] filenames = new String[Constants.NUM_CPUS];
         for (int i = 0; i < Constants.NUM_CPUS; i++) {
-            filenames[i] = traceFile + "_" + (i + 1) + ".data";
+            filenames[i] = traceFile + "_" + i + ".data";
         }
 
         for (int i = 0; i < Constants.NUM_CPUS; i++) {
@@ -54,7 +54,7 @@ public final class Main {
             bus.addCache(cache);
         }
 
-        runUntilEnd(processors,caches,bus);
+        //runUntilEnd(processors,caches,bus);
         printResults (processors,caches,bus);
     }
 

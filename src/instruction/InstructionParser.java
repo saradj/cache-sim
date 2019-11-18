@@ -1,8 +1,9 @@
 package instruction;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
+
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Scanner;
@@ -17,9 +18,9 @@ public final class InstructionParser {
         Queue <Instruction> instructions = new LinkedList<>();
 
         try (Scanner scanner = new Scanner(new File(fileName))){
-            while(scanner.hasNextLine()){
+            while(scanner.hasNextInt()){
                 InstructionType type = InstructionType.values()[scanner.nextInt()];
-                int otherField = scanner.nextInt(HEX_RADIX);
+                int otherField = Integer.parseUnsignedInt(scanner.next().substring(2), HEX_RADIX);
                 Instruction instruction = new Instruction(type,otherField);
                 instructions.add(instruction);
             }

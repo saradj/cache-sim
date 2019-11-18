@@ -7,19 +7,10 @@ public abstract class CacheBlock {
     private final int size;
 
     private int tag;
-    private boolean valid;
 
     public CacheBlock(int size) {
         this.size = size;
-        this.valid = false;
-    }
 
-    public boolean isValid() {
-        return valid;
-    }
-
-    public void setValid(boolean valid) {
-        this.valid = valid;
     }
 
     public int getTag() {

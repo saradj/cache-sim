@@ -6,4 +6,5 @@ public interface Constants {
     int BUS_WORD_LATENCY = 2;
     int L1_CACHE_EVICTION_LATENCY = 100;
     int NUM_CPUS =  4;
+    int BUS_MESSAGE_CYCLES = 1;
 }
