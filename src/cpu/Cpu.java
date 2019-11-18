@@ -93,6 +93,21 @@ public final class Cpu {
         setState(CpuState.IDLE);
     }
 
+    public long getCycleCount() {
+        return cycleCount;
+    }
+
+    public int getTotalComputingCycles() {
+        return totalComputingCycles;
+    }
+
+    public int getTotalIdleCycles() {
+        return totalIdleCycles;
+    }
+
+    public int getNumLoadStore() {
+        return numLoadStore;
+    }
 
     private void setState(CpuState state) {
         this.state = state;
