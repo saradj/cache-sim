@@ -13,11 +13,12 @@ public abstract class Cache implements Clocked {
 
     private final int cacheSize;
     private final int blockSize;
-    private final int associativity;
     private final LruQueue[] lruQueues;
-    private final int id;
+
 
     protected final int numLines;
+    protected final int associativity;
+    protected final int id;
 
     private Cpu cpu;
     private Bus bus;
@@ -60,7 +61,6 @@ public abstract class Cache implements Clocked {
     public void linkCpu(Cpu p) {
         this.cpu = p;
     }
-
 
     protected int getTag(int address) {
         return address / numLines;
