@@ -31,13 +31,10 @@ public final class MesiCache extends Cache {
         if(mesiCacheBlock==null)
             return;
         if (processingRequest.getSenderId() == this.getId()) {//this cache sent the request, should transition
-
             switch (mesiCacheBlock.getMesiState()) {//shouldnt be null since it's this cache that generated the request for it
                 case MODIFIED: //nothing happens if you read or write in modified!
                     break;
-                case EXCLUSIVE://shuld the bus notify to move to modified on a RdX?, moves to M witout any Bus events
-                    if (busEvent == BusEvent.BusRdX)
-                        mesiCacheBlock.setMesiState(MesiState.MODIFIED);
+                case EXCLUSIVE:// moves to M witout any Bus events
                     break;
                 case SHARED:
                     if (busEvent == BusEvent.BusRdX)
@@ -45,8 +42,13 @@ public final class MesiCache extends Cache {
                     break;
                 case INVALID:
                     if (busEvent == BusEvent.BusRd) {
-                        //checks if this block was present in other caches or it had to go to memory
-                        mesiCacheBlock.setMesiState(this.getBus().askOthers(processingRequest) ? MesiState.SHARED : MesiState.EXCLUSIVE);
+                        if(getBus().askOthers(getId(), processingRequest.getAddress())){
+                            //checks if this block was present in other caches or it had to go to memory
+                            mesiCacheBlock.setMesiState(MesiState.SHARED);
+                        }else{
+                            getBus().fetchFromMemory(this.getId(), processingRequest.getAddress());
+                            mesiCacheBlock.setMesiState(MesiState.EXCLUSIVE);
+                        }
                     }
                     break;
             }
@@ -55,11 +57,11 @@ public final class MesiCache extends Cache {
 
                 case MODIFIED:
                     if(busEvent==BusEvent.BusRd){
-                        getBus().flushMemory(new DataRequest(this.getId(), BusEvent.Flush,processingRequest.getAddress(),100));
+                        getBus().flushMemory(new DataRequest(this.getId(), BusEvent.Flush,processingRequest.getAddress(),Constants.MEMORY_LATENCY));
                         mesiCacheBlock.setMesiState(MesiState.SHARED);
                     }
                     else if(busEvent==BusEvent.BusRdX) {
-                        getBus().flushMemory(new DataRequest(this.getId(), BusEvent.Flush,processingRequest.getAddress(),100));
+                        getBus().flushMemory(new DataRequest(this.getId(), BusEvent.Flush,processingRequest.getAddress(),Constants.MEMORY_LATENCY));
                         mesiCacheBlock.setMesiState(MesiState.INVALID);
                     }
                     break;
@@ -131,22 +133,26 @@ public final class MesiCache extends Cache {
 
     }
 
+    @Override
+    public boolean cacheHit(int address) {
+        return getBlockState(address)!=MesiState.INVALID;
+    }
 
 
     private MesiState getBlockState (int address){
+        MesiCacheBlock cacheBlock =getCacheBlock(address);
+        return cacheBlock==null? MesiState.INVALID: cacheBlock.getMesiState();
+    }
+
+    protected MesiCacheBlock getCacheBlock(int address) {
         int tag = super.getTag(address);
         int lineNum = super.getLineNumber(address);
 
         for (int i = 0; i < associativity; i++){
             if ((cacheBlocks[lineNum][i].getTag() == tag)){
-                return cacheBlocks[lineNum][i].getMesiState();
+                return cacheBlocks[lineNum][i];
             }
         }
-        return MesiState.INVALID;
-
-    }
-
-    protected MesiCacheBlock getCacheBlock(int address) {
         return null;
     }
 }

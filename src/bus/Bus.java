@@ -3,6 +3,7 @@ package bus;
 import cache.Cache;
 import cache.Protocol;
 import common.Clocked;
+import common.Constants;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -69,15 +70,16 @@ public class Bus implements Clocked {
         requests.add(0,request);
     }
 
-    public boolean askOthers(Request processingRequest) {
-        int addressNeeded = processingRequest.getAddress();
-        int senderId = processingRequest.getSenderId();
+    public boolean askOthers(int senderId, int address) {
+
         for (Cache cache : caches) {
-            if (cache.getId() != senderId && cache.containsBlock(addressNeeded))
+            if (cache.getId() != senderId && cache.cacheHit(address))
                 return true;
         }
         return false;
     }
 
-
+    public void fetchFromMemory(int id, int address) {
+        requests.add(0,new DataRequest(id, BusEvent.BusRd,address, Constants.L1_CACHE_EVICTION_LATENCY));
+    }
 }

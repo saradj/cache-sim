@@ -34,7 +34,7 @@ public final class Main {
 
         List<Cpu> processors = new ArrayList<Cpu>();
         List<Cache> caches = new ArrayList<Cache>();
-        Bus bus = new Bus(protocol);
+        Bus bus = new Bus();
 
         String[] filenames = new String[Constants.NUM_CPUS];
         for (int i = 0; i < Constants.NUM_CPUS; i++) {

@@ -52,15 +52,13 @@ public abstract class Cache implements Clocked {
     public void linkBus(Bus bus){
         this.bus = bus;
     }
-    public boolean containsBlock(int address) {
-        return true;
-    }
     public Bus getBus(){
         return bus;
     }
     public void linkCpu(Cpu p) {
         this.cpu = p;
     }
+    public abstract boolean cacheHit(int address);
 
     protected int getTag(int address) {
         return address / numLines;

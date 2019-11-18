@@ -1,5 +1,5 @@
 package dragon;
 
 public enum DragonState {
-    EXCLUSIVE, SM, SC, MODIFIED
+    EXCLUSIVE, SM, SC, MODIFIED, NOT_IN_CACHE
 }
