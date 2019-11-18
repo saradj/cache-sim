@@ -20,6 +20,10 @@ public final class Cpu {
 
     private int executingCyclesLeft;
 
+    private int totalComputingCycles;
+    private int totalIdleCycles;
+    private int numLoadStore;
+
     public Cpu(Cache cache) {
         this.cache = cache;
         this.cycleCount = 0;
@@ -27,6 +31,9 @@ public final class Cpu {
         this.state = CpuState.IDLE;
         instructions = new LinkedList<>();
         executingCyclesLeft = 0;
+        totalComputingCycles = 0;
+        totalIdleCycles = 0;
+        numLoadStore = 0;
     }
 
     public void executeOneCycle (){
@@ -39,6 +46,7 @@ public final class Cpu {
                 }
                 break;
             case BLOCKING:
+                totalIdleCycles ++;
                 break;
             case EXECUTING:
                 executingCyclesLeft --;
@@ -52,6 +60,7 @@ public final class Cpu {
     private void executeInstruction(Instruction instruction) {
         switch (instruction.getType()){
             case READ: {
+                numLoadStore ++;
                 CacheInstruction cacheInstruction = new CacheInstruction(CacheInstructionType.READ,
                         instruction.getSecondField());
                 cache.ask(cacheInstruction);
@@ -59,6 +68,7 @@ public final class Cpu {
                 break;
             }
             case WRITE: {
+                numLoadStore ++;
                 CacheInstruction cacheInstruction = new CacheInstruction(CacheInstructionType.WRITE,
                         instruction.getSecondField());
                 cache.ask(cacheInstruction);
