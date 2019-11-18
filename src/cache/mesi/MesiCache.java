@@ -74,6 +74,7 @@ public final class MesiCache extends Cache {
 
     @Override
     public void ask(CacheInstruction instruction) {
+        MesiState state = hit(instruction.getAddress()) ?
 
     }
 
