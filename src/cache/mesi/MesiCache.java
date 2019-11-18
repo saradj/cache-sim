@@ -1,25 +1,25 @@
 package cache.mesi;
 
 import bus.BusEvent;
+import bus.DataRequest;
 import bus.Request;
 import cache.Cache;
 import cache.CacheBlock;
 import cache.instruction.CacheInstruction;
 
 public final class MesiCache extends Cache {
+    private MesiCacheBlock[][] mesiCacheBlocks;
 
     public MesiCache(int id, int cacheSize, int blockSize, int associativity) {
         super(id, cacheSize, blockSize, associativity);
-        this.cacheBlocks = new MesiCacheBlock[numLines][associativity];
+        this.mesiCacheBlocks = new MesiCacheBlock[numLines][associativity];
         for (int i = 0; i < numLines; i++) {
             for (int j = 0; j < associativity; j++) {
-                cacheBlocks[i][j] = new MesiCacheBlock(blockSize);
+                mesiCacheBlocks[i][j] = new MesiCacheBlock(blockSize);
             }
         }
 
     }
-
-
 
     @Override
     public void notifyChange(Request processingRequest) {
@@ -51,16 +51,24 @@ public final class MesiCache extends Cache {
             switch (mesiCacheBlock.getMesiState()){
 
                 case MODIFIED:
-                    if(busEvent==BusEvent.BusRd)
+                    if(busEvent==BusEvent.BusRd){
+                        getBus().flushMemory(new DataRequest(this.getId(), BusEvent.Flush,processingRequest.getAddress(),100));
                         mesiCacheBlock.setMesiState(MesiState.SHARED);
-                    else if(busEvent==BusEvent.BusRdX)
+                    }
+                    else if(busEvent==BusEvent.BusRdX) {
+                        getBus().flushMemory(new DataRequest(this.getId(), BusEvent.Flush,processingRequest.getAddress(),100));
                         mesiCacheBlock.setMesiState(MesiState.INVALID);
+                    }
                     break;
                 case EXCLUSIVE:
-                    if(busEvent==BusEvent.BusRd)
+                    if(busEvent==BusEvent.BusRd) {
+                        getBus().flushClean(new DataRequest(this.getId(),BusEvent.Flush, processingRequest.getAddress(), getBlockSize()/2));
                         mesiCacheBlock.setMesiState(MesiState.SHARED);
-                    else if(busEvent==BusEvent.BusRdX)
+                    }
+                    else if(busEvent==BusEvent.BusRdX) {
+                        getBus().flushClean(new DataRequest(this.getId(), BusEvent.Flush, processingRequest.getAddress(), getBlockSize()/2));
                         mesiCacheBlock.setMesiState(MesiState.INVALID);
+                    }
                     break;
                 case SHARED:
                     if(busEvent==BusEvent.BusRdX)
@@ -74,10 +82,8 @@ public final class MesiCache extends Cache {
 
     @Override
     public void ask(CacheInstruction instruction) {
-        MesiState state = hit(instruction.getAddress()) ?
-
+      //  MesiState state = hit(instruction.getAddress()) ?
     }
-
 
     protected MesiCacheBlock getCacheBlock(int address) {
         return null;

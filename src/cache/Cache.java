@@ -44,6 +44,10 @@ public abstract class Cache implements Clocked {
     public void notifyOver() {
     }
 
+    public int getBlockSize() {
+        return blockSize;
+    }
+
     public void linkBus(Bus bus){
         this.bus = bus;
     }

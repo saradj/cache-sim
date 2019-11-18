@@ -1,6 +1,7 @@
 package dragon;
 
 import bus.BusEvent;
+import bus.DataRequest;
 import bus.Request;
 import cache.Cache;
 import cache.instruction.CacheInstruction;
@@ -20,8 +21,7 @@ public class DragonCache extends Cache {
         if (processingRequest.getSenderId() == this.getId()) {
             switch (dragonCacheBlock.getState()) {
                 //shouldnt be null since it's this cache that generated the request for it
-                case EXCLUSIVE: //if it's a read stay, if it's a write automaticaly you should be in M no bus events sent
-
+                case EXCLUSIVE: //if it's a read stay, if it's a write automatically you should be in M no bus events happened
                     break;
                 case SM:
                     break;
@@ -35,20 +35,26 @@ public class DragonCache extends Cache {
 
         } else {//some other cache send the request
             switch (dragonCacheBlock.getState()) {
-                //shouldnt be null since it's this cache that generated the request for it
+                //shouldn't be null since it's this cache that generated the request for it
                 case EXCLUSIVE:
                     if (busEvent == BusEvent.BusRd)
                         dragonCacheBlock.setState(DragonState.SC);
                     break;
                 case SM:
-                    if (busEvent == BusEvent.BusUpd)
+                    if (busEvent == BusEvent.BusUpd) {
                         dragonCacheBlock.setState(DragonState.SC);
+                    }
+                    if (busEvent == BusEvent.BusRd) {
+                        getBus().flushMemory(new DataRequest(this.getId(), BusEvent.Flush, processingRequest.getAddress(), 100));
+                        //stays in sm
+                    }
                     break;
                 case SC:
                     break;
                 case MODIFIED:
                     if (busEvent == BusEvent.BusRd)
-                        dragonCacheBlock.setState(DragonState.SM);
+                        getBus().flushMemory(new DataRequest(this.getId(), BusEvent.Flush, processingRequest.getAddress(), 100));
+                    dragonCacheBlock.setState(DragonState.SM);
                     break;
             }
 
