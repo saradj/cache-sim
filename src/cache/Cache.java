@@ -6,6 +6,7 @@ import cache.instruction.CacheInstruction;
 import cache.lru.LruQueue;
 import common.Clocked;
 import cpu.Cpu;
+import dragon.DragonCacheBlock;
 
 
 public abstract class Cache implements Clocked {
@@ -43,6 +44,7 @@ public abstract class Cache implements Clocked {
     }
     public void notifyOver() {
     }
+
     public void linkBus(Bus bus){
         this.bus = bus;
     }
@@ -62,5 +64,6 @@ public abstract class Cache implements Clocked {
     protected int getLineNumber(int address) {
         return address % numLines;
     }
+
 
 }
