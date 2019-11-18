@@ -42,7 +42,7 @@ public class Bus implements Clocked {
         }
         if(processingRequest.getCyclesToExecute()==0) {
             executeTransition(processingRequest);
-            caches.get(processingRequest.getSenderId()).notifyOver();
+            //caches.get(processingRequest.getSenderId()).notifyOver();
             processingRequest=null;
             return;
         }

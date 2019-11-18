@@ -6,6 +6,7 @@ import cache.instruction.CacheInstruction;
 import cache.lru.LruQueue;
 import common.Clocked;
 import cpu.Cpu;
+import dragon.DragonCacheBlock;
 
 import java.time.Clock;
 
@@ -70,4 +71,5 @@ public abstract class Cache implements Clocked {
     public void linkCpu(Cpu p) {
         this.cpu = p;
     }
+
 }

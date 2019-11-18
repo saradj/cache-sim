@@ -3,6 +3,7 @@ package cache.mesi;
 import bus.BusEvent;
 import bus.Request;
 import cache.Cache;
+import cache.CacheBlock;
 import cache.instruction.CacheInstruction;
 
 public final class MesiCache extends Cache {
@@ -18,10 +19,7 @@ public final class MesiCache extends Cache {
 
     }
 
-    public MesiCacheBlock getCacheBlock(int address) {
-        //todo
-        return null;
-    }
+
 
     @Override
     public void notifyChange(Request processingRequest) {
@@ -77,5 +75,10 @@ public final class MesiCache extends Cache {
     @Override
     public void ask(CacheInstruction instruction) {
 
+    }
+
+
+    protected MesiCacheBlock getCacheBlock(int address) {
+        return null;
     }
 }
