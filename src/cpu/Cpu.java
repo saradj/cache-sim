@@ -22,14 +22,24 @@ public final class Cpu {
     private String input_file;
     private int executingCyclesLeft;
 
+    private int totalComputingCycles;
+    private int totalIdleCycles;
+    private int numLoadStore;
+
     public Cpu(Cache cache, String input_file_path) {
+
         this.cache = cache;
         this.cycleCount = 0;
         this.instructionCount = 0;
         this.state = CpuState.IDLE;
         instructions = new LinkedList<>();
         executingCyclesLeft = 0;
+
         input_file = input_file_path;
+        totalComputingCycles = 0;
+        totalIdleCycles = 0;
+        numLoadStore = 0;
+
 
     }
 
@@ -54,6 +64,8 @@ public final class Cpu {
             }
         }
         return instructions;
+
+
     }
 
     public void executeOneCycle() {
@@ -66,6 +78,7 @@ public final class Cpu {
                 }
                 break;
             case BLOCKING:
+                totalIdleCycles ++;
                 break;
             case EXECUTING:
                 executingCyclesLeft--;
@@ -79,6 +92,8 @@ public final class Cpu {
     private void executeInstruction(Instruction instruction) {
         switch (instruction.getType()) {
             case READ: {
+
+                numLoadStore ++;
                 CacheInstruction cacheInstruction = new CacheInstruction(InstructionType.READ,
                         instruction.getSecondField());
                 cache.ask(cacheInstruction);
@@ -86,7 +101,9 @@ public final class Cpu {
                 break;
             }
             case WRITE: {
+                numLoadStore ++;
                 CacheInstruction cacheInstruction = new CacheInstruction(InstructionType.WRITE,
+
                         instruction.getSecondField());
                 cache.ask(cacheInstruction);
                 setState(CpuState.BLOCKING);
@@ -110,6 +127,21 @@ public final class Cpu {
         setState(CpuState.IDLE);
     }
 
+    public long getCycleCount() {
+        return cycleCount;
+    }
+
+    public int getTotalComputingCycles() {
+        return totalComputingCycles;
+    }
+
+    public int getTotalIdleCycles() {
+        return totalIdleCycles;
+    }
+
+    public int getNumLoadStore() {
+        return numLoadStore;
+    }
 
     private void setState(CpuState state) {
         this.state = state;
