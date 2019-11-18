@@ -3,12 +3,12 @@ package bus;
 import cache.Cache;
 
 public class Request {
-    Cache sender;
+    private int senderId;
     private int cyclesToExecute;
     private BusEvent busEvent;
     private int address;
-    public Request(Cache sender, BusEvent busEvent, int address, int cyclesToExecute){
-        this.sender=sender;
+    public Request(int senderId, BusEvent busEvent, int address, int cyclesToExecute){
+        this.senderId=senderId;
         this.address=address;
         this.cyclesToExecute=cyclesToExecute;
         this.busEvent=busEvent;
@@ -16,8 +16,8 @@ public class Request {
 public int getCyclesToExecute(){
         return cyclesToExecute;
 }
-    public Cache getSender() {
-        return sender;
+    public int getSenderId() {
+        return senderId;
     }
     public void decrementCyclesToExecute(){
         cyclesToExecute--;

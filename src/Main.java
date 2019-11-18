@@ -43,8 +43,8 @@ public final class Main {
 
         for (int i = 0; i < Constants.NUM_CPUS; i++) {
             Cache cache = protocol == Protocol.MESI ?
-                    new MesiCache(cacheSize, blockSize, associativity) :
-                    new DragonCache(cacheSize, blockSize, associativity);
+                    new MesiCache(i,cacheSize, blockSize, associativity) :
+                    new DragonCache(i,cacheSize, blockSize, associativity);
             Cpu p = new Cpu(cache);
             Queue<Instruction> instructions = InstructionParser.parseInstructions(filenames[i]);
             p.setInstructions(instructions);

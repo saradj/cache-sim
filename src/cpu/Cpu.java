@@ -41,6 +41,32 @@ public final class Cpu implements Clocked {
 
     }
 
+    private Queue<Instruction> getInstructionsFromFile(String filePath) throws IOException {
+        Queue<Instruction> instructions = new LinkedList<Instruction>();
+        BufferedReader instStream = new BufferedReader(new FileReader(filePath));
+        String line;
+        String[] lineTokens;
+        if ((line = instStream.readLine()) != null) {
+            lineTokens = line.split(" ");
+            switch (Integer.parseInt(lineTokens[0])) {
+                case 0://load
+                    instructions.add(new CacheInstruction(InstructionType.READ, Integer.parseInt(lineTokens[1])));
+                    break;
+                case 1://store
+                    instructions.add(new CacheInstruction(InstructionType.WRITE, Integer.parseInt(lineTokens[1])));
+                    break;
+                case 2://other
+                    instructions.add(new Instruction(InstructionType.OTHER, Integer.parseInt(lineTokens[1])));
+                default:
+                    break;
+            }
+        }
+        return instructions;
+
+
+
+    }
+
     public void runForOneCycle() {
         switch (state) {
             case IDLE:
