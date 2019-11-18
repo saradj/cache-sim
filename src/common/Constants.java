@@ -5,4 +5,5 @@ public interface Constants {
     int MEMORY_LATENCY = 100;
     int BUS_WORD_LATENCY = 2;
     int L1_CACHE_EVICTION_LATENCY = 100;
+    int NUM_CPUS =  4;
 }

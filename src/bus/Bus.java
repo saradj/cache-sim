@@ -2,10 +2,11 @@ package bus;
 
 import cache.Cache;
 import cache.Protocol;
+import common.Clocked;
 
 import java.util.*;
 
-public class Bus {
+public class Bus implements Clocked {
     private boolean isBusy;
     private List<Cache> caches;
     private Queue<Request> requests;
