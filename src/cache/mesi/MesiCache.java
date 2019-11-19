@@ -11,6 +11,7 @@ import common.Constants;
 
 public final class MesiCache extends Cache {
     private final MesiCacheBlock[][] cacheBlocks;
+    private int cacheMiss;
 
 
     public MesiCache(int id, int cacheSize, int blockSize, int associativity) {
@@ -21,6 +22,7 @@ public final class MesiCache extends Cache {
                 cacheBlocks[i][j] = new MesiCacheBlock(blockSize);
             }
         }
+        cacheMiss=0;
 
     }
 
@@ -91,10 +93,13 @@ public final class MesiCache extends Cache {
         MesiState state = getBlockState(instruction.getAddress());
         CacheInstructionType type = instruction.getCacheInstructionType();
         int address = instruction.getAddress();
+        MesiCacheBlock cacheBlock= getCacheBlock(address);
+        boolean sharedSignal= getBus().askOthers(id,address);
 
         switch (state){
 
             case INVALID: { // cache Miss
+                cacheMiss++;
                 if (type == CacheInstructionType.READ){
                     Request request = new Request(id,
                                       BusEvent.BusRd,address, Constants.BUS_MESSAGE_CYCLES);
@@ -115,16 +120,10 @@ public final class MesiCache extends Cache {
                             BusEvent.BusRdX,address, Constants.BUS_MESSAGE_CYCLES);
                     getBus().addRequest(request);
                 }
-
                 break;
             }
             case EXCLUSIVE:{
-                if (type == CacheInstructionType.WRITE){
-                    Request request = new Request(id,
-                            BusEvent.BusRdX,address, Constants.BUS_MESSAGE_CYCLES);
-                    getBus().addRequest(request);
-                }
-
+                cacheBlock.setMesiState(MesiState.MODIFIED);
                 break;
             }
 
@@ -155,4 +154,10 @@ public final class MesiCache extends Cache {
         }
         return null;
     }
+
+    public int getNbCacheMiss() {
+        return cacheMiss;
+    }
+
+
 }

@@ -66,6 +66,6 @@ public abstract class Cache implements Clocked {
     protected int getLineNumber(int address) {
         return address % numLines;
     }
-
+    public abstract int getNbCacheMiss();
 
 }

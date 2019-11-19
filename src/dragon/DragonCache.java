@@ -10,6 +10,7 @@ import common.Constants;
 
 public class DragonCache extends Cache {
     private DragonCacheBlock[][] dragonCacheBlocks;
+    private int cacheMiss;
 
     public DragonCache(int id, int cacheSize, int blockSize, int associativity) {
         super(id, cacheSize, blockSize, associativity);
@@ -19,17 +20,17 @@ public class DragonCache extends Cache {
                 dragonCacheBlocks[i][j] = new DragonCacheBlock(blockSize);
             }
         }
+        cacheMiss++;
     }
 
     @Override
     public void notifyChange(Request processingRequest) {
-        DragonCacheBlock dragonCacheBlock =  this.getCacheBlock(processingRequest.getAddress());
+        DragonCacheBlock dragonCacheBlock = this.getCacheBlock(processingRequest.getAddress());
         BusEvent busEvent = processingRequest.getBusEvent();
         if (dragonCacheBlock == null)
             return;
         if (processingRequest.getSenderId() == this.getId()) {
             switch (dragonCacheBlock.getState()) {
-                //shouldnt be null since it's this cache that generated the request for it
                 case EXCLUSIVE: //if it's a read stay, if it's a write automatically you should be in M no bus events happened
                     break;
                 case SM:
@@ -70,17 +71,17 @@ public class DragonCache extends Cache {
         }
     }
 
-    private DragonState getBlockState (int address){
-        DragonCacheBlock cacheBlock =getCacheBlock(address);
-        return cacheBlock==null? DragonState.NOT_IN_CACHE: cacheBlock.getState();
+    private DragonState getBlockState(int address) {
+        DragonCacheBlock cacheBlock = getCacheBlock(address);
+        return cacheBlock == null ? DragonState.NOT_IN_CACHE : cacheBlock.getState();
     }
 
     protected DragonCacheBlock getCacheBlock(int address) {
         int tag = super.getTag(address);
         int lineNum = super.getLineNumber(address);
 
-        for (int i = 0; i < associativity; i++){
-            if ((dragonCacheBlocks[lineNum][i].getTag() == tag)){
+        for (int i = 0; i < associativity; i++) {
+            if ((dragonCacheBlocks[lineNum][i].getTag() == tag)) {
                 return dragonCacheBlocks[lineNum][i];
             }
         }
@@ -90,61 +91,64 @@ public class DragonCache extends Cache {
     @Override
     public void ask(CacheInstruction instruction) {
         int address = instruction.getAddress();
-        DragonState state= getBlockState(address);
+        DragonState state = getBlockState(address);
         CacheInstructionType type = instruction.getCacheInstructionType();
         DragonCacheBlock cacheBlock = getCacheBlock(address);
-        boolean sharedSignal=getBus().askOthers(this.id, address);
-        switch (state){
+        boolean sharedSignal = getBus().askOthers(this.id, address);
+        switch (state) {
 
-            case EXCLUSIVE:{
-                if(type==CacheInstructionType.WRITE)
+            case EXCLUSIVE: {
+                if (type == CacheInstructionType.WRITE)
                     cacheBlock.setState(DragonState.MODIFIED);
             }
-                break;
-            case SM:{
-                if(type==CacheInstructionType.WRITE) {
-                        getBus().addRequest(new Request(id, BusEvent.BusUpd, address, Constants.BUS_WORD_LATENCY));// OR JUST MESSAGE LATENCY?
-                        cacheBlock.setState(sharedSignal? DragonState.SM:DragonState.MODIFIED);//no need to update if it has only copy, but following the diagram ?
+            break;
+            case SM: {
+                if (type == CacheInstructionType.WRITE) {
+                    getBus().addRequest(new Request(id, BusEvent.BusUpd, address, Constants.BUS_WORD_LATENCY));// OR JUST MESSAGE LATENCY?
+                    cacheBlock.setState(sharedSignal ? DragonState.SM : DragonState.MODIFIED);//no need to update if it has only copy, but following the diagram ?
                 }
 
             }
-                break;
-            case SC:{
-                if(type==CacheInstructionType.WRITE){
-                        getBus().addRequest(new Request(id, BusEvent.BusUpd,address,Constants.BUS_WORD_LATENCY));//send this anyways? according to the diagram
-                        cacheBlock.setState(sharedSignal? DragonState.SM:DragonState.MODIFIED);
-
+            break;
+            case SC: {
+                if (type == CacheInstructionType.WRITE) {
+                    getBus().addRequest(new Request(id, BusEvent.BusUpd, address, Constants.BUS_WORD_LATENCY));//send this anyways? according to the diagram
+                    cacheBlock.setState(sharedSignal ? DragonState.SM : DragonState.MODIFIED);
                 }
             }
-                break;
+            break;
             case MODIFIED:
                 break;
-            case NOT_IN_CACHE:{
-                if(type==CacheInstructionType.READ) {
+            case NOT_IN_CACHE: {
+                if (type == CacheInstructionType.READ) {
                     if (sharedSignal) {
                         cacheBlock.setState(DragonState.SC);
                     } else {
-                       // getBus().addRequest(new Request(id, BusEvent.BusRd, address, Constants.BUS_MESSAGE_CYCLES));
+                        // getBus().addRequest(new Request(id, BusEvent.BusRd, address, Constants.BUS_MESSAGE_CYCLES));
                         cacheBlock.setState(DragonState.EXCLUSIVE);
                     }
-                }else {//write instr
-                    if(sharedSignal){
+                } else {//write instr
+                    if (sharedSignal) {
                         getBus().addRequest(new Request(id, BusEvent.BusUpd, address, Constants.BUS_WORD_LATENCY));// OR JUST MESSAGE LATENCY?
                         cacheBlock.setState(DragonState.SM);
-                    }else {
+                    } else {
                         cacheBlock.setState(DragonState.MODIFIED);
                     }
                 }
-
             }
-
-                break;
+            break;
         }
 
     }
 
     @Override
     public boolean cacheHit(int address) {
-        return getBlockState(address)!=DragonState.NOT_IN_CACHE;
+        return getBlockState(address) != DragonState.NOT_IN_CACHE;
     }
+
+    @Override
+    public int getNbCacheMiss() {
+        return cacheMiss;
+    }
+
 }

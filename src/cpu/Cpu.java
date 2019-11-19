@@ -5,11 +5,7 @@ import cache.instruction.CacheInstruction;
 import cache.instruction.CacheInstructionType;
 import common.Clocked;
 import instruction.Instruction;
-import instruction.InstructionType;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -25,7 +21,8 @@ public final class Cpu implements Clocked {
 
     private int totalComputingCycles;
     private int totalIdleCycles;
-    private int numLoadStore;
+    private int numLoad;
+    private int numStore;
 
     public Cpu(Cache cache) {
 
@@ -38,7 +35,8 @@ public final class Cpu implements Clocked {
 
         totalComputingCycles = 0;
         totalIdleCycles = 0;
-        numLoadStore = 0;
+        numLoad = 0;
+        numStore=0;
 
     }
 
@@ -52,7 +50,7 @@ public final class Cpu implements Clocked {
                 }
                 break;
             case BLOCKING:
-                totalIdleCycles ++;
+                totalIdleCycles++;
                 break;
             case EXECUTING:
                 executingCyclesLeft--;
@@ -67,7 +65,7 @@ public final class Cpu implements Clocked {
         switch (instruction.getType()) {
             case READ: {
 
-                numLoadStore ++;
+                numLoad++;
                 CacheInstruction cacheInstruction = new CacheInstruction(CacheInstructionType.READ,
                         instruction.getSecondField());
                 cache.ask(cacheInstruction);
@@ -75,7 +73,7 @@ public final class Cpu implements Clocked {
                 break;
             }
             case WRITE: {
-                numLoadStore ++;
+                numStore++;
                 CacheInstruction cacheInstruction = new CacheInstruction(CacheInstructionType.WRITE,
                         instruction.getSecondField());
                 cache.ask(cacheInstruction);
@@ -84,6 +82,7 @@ public final class Cpu implements Clocked {
             }
             case OTHER: {
                 this.executingCyclesLeft = instruction.getSecondField();
+                totalComputingCycles += executingCyclesLeft;
                 setState(CpuState.EXECUTING);
                 break;
             }
@@ -104,6 +103,11 @@ public final class Cpu implements Clocked {
         return cycleCount;
     }
 
+    public double getMissRate() {
+        double missRate = cache.getNbCacheMiss() / instructionCount;
+        return missRate * 100;
+    }
+
     public int getTotalComputingCycles() {
         return totalComputingCycles;
     }
@@ -112,13 +116,17 @@ public final class Cpu implements Clocked {
         return totalIdleCycles;
     }
 
-    public int getNumLoadStore() {
-        return numLoadStore;
+    public int getNumLoad() {
+        return numLoad;
+    }
+    public int getNumStore(){
+        return numStore;
     }
 
-    public boolean finishedExecution(){
+    public boolean finishedExecution() {
         return this.instructions.isEmpty() && this.state == CpuState.IDLE;
     }
+
     private void setState(CpuState state) {
         this.state = state;
     }
