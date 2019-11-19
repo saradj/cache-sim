@@ -102,10 +102,8 @@ public final class Cpu implements Clocked {
     public long getCycleCount() {
         return cycleCount;
     }
-
-    public double getMissRate() {
-        double missRate = cache.getNbCacheMiss() / instructionCount;
-        return missRate * 100;
+    public int getInstructionCount(){
+        return instructionCount;
     }
 
     public int getTotalComputingCycles() {

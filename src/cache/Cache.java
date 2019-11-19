@@ -58,6 +58,12 @@ public abstract class Cache implements Clocked {
     public void linkCpu(Cpu p) {
         this.cpu = p;
     }
+    public Cpu getCpu(){
+        return cpu;
+    }
+    public void wakeCpu(){
+        cpu.wake();
+    }
     public abstract boolean cacheHit(int address);
 
     protected int getTag(int address) {
@@ -68,4 +74,8 @@ public abstract class Cache implements Clocked {
     }
     public abstract int getNbCacheMiss();
 
+    public double getMissRate() {
+        double missRate = getNbCacheMiss() / getCpu().getInstructionCount();
+        return missRate * 100;
+    }
 }
