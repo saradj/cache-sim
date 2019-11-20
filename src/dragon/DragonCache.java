@@ -12,7 +12,12 @@ public class DragonCache extends Cache {
     }
 
     @Override
-    public void notifyChange(Request processingRequest) {
+    public int notifyRequestAndGetExtraCycles(Request request) {
+        return 0;
+    }
+
+    
+    public void notify(Request processingRequest) {
         DragonCacheBlock dragonCacheBlock = (DragonCacheBlock) this.getCacheBlock(processingRequest.getAddress());
         BusEvent busEvent = processingRequest.getBusEvent();
         if (dragonCacheBlock == null)
@@ -63,5 +68,15 @@ public class DragonCache extends Cache {
     @Override
     public void ask(CacheInstruction instruction) {
 
+    }
+
+    @Override
+    public boolean hasBlock(int address) {
+        return false;
+    }
+
+    @Override
+    public Request getRequest() {
+        return null;
     }
 }

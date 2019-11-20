@@ -1,4 +1,5 @@
 import bus.Bus;
+import bus.BusController;
 import cache.Cache;
 import common.Constants;
 import dragon.DragonCache;
@@ -34,7 +35,10 @@ public final class Main {
 
         List<Cpu> processors = new ArrayList<Cpu>();
         List<Cache> caches = new ArrayList<Cache>();
-        Bus bus = new Bus(protocol);
+        BusController controller = new BusController();
+        Bus bus = new Bus();
+        bus.attachTo(controller);
+        controller.attachTo(bus);
 
         String[] filenames = new String[Constants.NUM_CPUS];
         for (int i = 0; i < Constants.NUM_CPUS; i++) {
@@ -51,7 +55,7 @@ public final class Main {
             processors.add(p);
             caches.add(cache);
             cache.linkCpu(p);
-            bus.addCache(cache);
+            controller.attach(cache);
         }
 
         //runUntilEnd(processors,caches,bus);
