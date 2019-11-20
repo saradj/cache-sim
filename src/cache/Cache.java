@@ -52,10 +52,6 @@ public abstract class Cache implements Clocked {
         return id;
     }
 
-    public void attachCpu(Cpu p) {
-        this.cpu = p;
-    }
-
     protected int getTag(int address) {
         return address / numLines;
     }

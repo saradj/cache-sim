@@ -58,7 +58,7 @@ public final class Main {
             controller.attach(cache);
         }
 
-        //runUntilEnd(processors,caches,bus);
+        runUntilEnd(processors,caches,bus);
         printResults (processors,caches,bus);
     }
 
