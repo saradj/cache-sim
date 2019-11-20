@@ -27,17 +27,21 @@ public class DragonCache extends Cache {
     public void notifyChange(Request processingRequest) {
         DragonCacheBlock dragonCacheBlock = this.getCacheBlock(processingRequest.getAddress());
         BusEvent busEvent = processingRequest.getBusEvent();
+        int address=processingRequest.getAddress();
+        boolean sharedSignal = getBus().askOthers(this.id, address);
         if (dragonCacheBlock == null)
             return;
         if (processingRequest.getSenderId() == this.getId()) {
             switch (dragonCacheBlock.getState()) {
                 case EXCLUSIVE: //if it's a read stay, if it's a write automatically you should be in M no bus events happened
                     break;
-                case SM:
+                case SM:if(busEvent==BusEvent.BusUpd){
+                    dragonCacheBlock.setState(sharedSignal? DragonState.SM:DragonState.MODIFIED);
+                }
                     break;
                 case SC:
                     if (busEvent == BusEvent.BusUpd)
-                        dragonCacheBlock.setState(DragonState.SM);//write back so not going to M
+                        dragonCacheBlock.setState(sharedSignal?DragonState.SM: DragonState.MODIFIED);//write back so not going to M
                     break;
                 case MODIFIED:
                     break;
@@ -56,7 +60,7 @@ public class DragonCache extends Cache {
                     }
                     if (busEvent == BusEvent.BusRd) {
                         getBus().flushMemory(new DataRequest(this.getId(), BusEvent.Flush, processingRequest.getAddress(), 100));
-                        //stays in sm
+                        //stays in sm, maybe not flush memory, just send the data on the bus
                     }
                     break;
                 case SC:

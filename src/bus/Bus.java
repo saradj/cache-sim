@@ -1,30 +1,46 @@
 package bus;
 
 import cache.Cache;
-import cache.Protocol;
 import common.Clocked;
 import common.Constants;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 public class Bus implements Clocked {
     private boolean isBusy;
     private List<Cache> caches;
     private List<Request> requests;
-    Request processingRequest;
+    private Request processingRequest;
+    private int busTraffic;
+    private int nbUpdates;
+    private int nbInvalidates;
 
     public Bus() {
         caches = new ArrayList<>();
         requests = new LinkedList<>();
         isBusy = false;
+        busTraffic = 0;
+        nbUpdates = 0;
+        nbInvalidates = 0;
 
     }
 
-    public boolean isBusy(){
+    public boolean isBusy() {
         return isBusy;
+    }
+
+    public int getBusTraffic() {
+        return busTraffic;
+    }
+
+    public int getNbInvalidates() {
+        return nbInvalidates;
+    }
+
+    public int getNbUpdates() {
+        return nbUpdates;
     }
 
     public void addCache(Cache cache) {
@@ -57,17 +73,34 @@ public class Bus implements Clocked {
     }
 
     private void executeTransition(Request processingRequest) {
+        boolean sharedSignal = askOthers(processingRequest.getSenderId(), processingRequest.getAddress());
+        int blockSize = caches.get(processingRequest.getSenderId()).getBlockSize();
+        switch (processingRequest.getBusEvent()) {
+            case BusRdX:
+                if (sharedSignal) {
+                    nbInvalidates++;
+                }
+            case BusRd:
+            case Flush:
+                busTraffic += blockSize;
+                break;
+            case BusUpd:
+                busTraffic += Constants.BYTES_IN_WORD;
+                nbUpdates++;
+                break;
+        }
+
         for (Cache cache : caches) {
             cache.notifyChange(processingRequest);
         }
     }
 
-    public void flushClean(DataRequest request){ //reading data from E
-        requests.add(0,request);
+    public void flushClean(DataRequest request) { //reading data from E
+        requests.add(0, request);
     }
 
-    public void flushMemory(DataRequest request){ //reading data from M
-        requests.add(0,request);
+    public void flushMemory(DataRequest request) { //reading data from M
+        requests.add(0, request);
     }
 
     public boolean askOthers(int senderId, int address) {
@@ -80,6 +113,6 @@ public class Bus implements Clocked {
     }
 
     public void fetchFromMemory(int id, int address) {
-        requests.add(0,new DataRequest(id, BusEvent.BusRd,address, Constants.L1_CACHE_EVICTION_LATENCY));
+        requests.add(0, new DataRequest(id, BusEvent.BusRd, address, Constants.L1_CACHE_EVICTION_LATENCY));
     }
 }
