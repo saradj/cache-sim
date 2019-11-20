@@ -1,11 +1,11 @@
 import bus.Bus;
 import bus.BusController;
 import cache.Cache;
-import common.Constants;
-import dragon.DragonCache;
 import cache.Protocol;
 import cache.mesi.MesiCache;
+import common.Constants;
 import cpu.Cpu;
+import dragon.DragonCache;
 import instruction.Instruction;
 import instruction.InstructionParser;
 
@@ -39,18 +39,19 @@ public final class Main {
         Bus bus = new Bus();
         bus.attachTo(controller);
         controller.attachTo(bus);
+       
 
-        String[] filenames = new String[Constants.NUM_CPUS];
-        for (int i = 0; i < Constants.NUM_CPUS; i++) {
-            filenames[i] = traceFile + "_" + i + ".data";
-        }
+
+        File dir = new File(traceFile);
+        File[] files = dir.listFiles();
+
 
         for (int i = 0; i < Constants.NUM_CPUS; i++) {
             Cache cache = protocol == Protocol.MESI ?
-                    new MesiCache(i,cacheSize, blockSize, associativity) :
-                    new DragonCache(i,cacheSize, blockSize, associativity);
+                    new MesiCache(i, cacheSize, blockSize, associativity) :
+                    new DragonCache(i, cacheSize, blockSize, associativity);
             Cpu p = new Cpu(cache);
-            Queue<Instruction> instructions = InstructionParser.parseInstructions(filenames[i]);
+            Queue<Instruction> instructions = InstructionParser.parseInstructions(files[i].getAbsolutePath());
             p.setInstructions(instructions);
             processors.add(p);
             caches.add(cache);
@@ -62,9 +63,9 @@ public final class Main {
         printResults (processors,caches,bus);
     }
 
-    private static void runUntilEnd(List<Cpu> processors,List<Cache>caches,Bus bus){
+    private static void runUntilEnd(List<Cpu> processors, List<Cache> caches, Bus bus) {
 
-        while (!allFinished(processors)){
+        while (!allFinished(processors)) {
             bus.runForOneCycle();
             caches.forEach(c -> c.runForOneCycle());
             Collections.shuffle(processors);
@@ -72,11 +73,26 @@ public final class Main {
         }
     }
 
-    private static boolean allFinished(List <Cpu> processors){
+    private static boolean allFinished(List<Cpu> processors) {
         return processors.stream().allMatch(p -> p.finishedExecution());
     }
 
-    private static void printResults(List<Cpu> processors,List<Cache>caches,Bus bus){
-
+    private static void printResults(List<Cpu> processors, List<Cache> caches, Bus bus) {
+        List<Long> executionCycle = new ArrayList<>(Constants.NUM_CPUS);
+        processors.forEach(p -> executionCycle.add(p.getCycleCount()));
+        long maxExecutionCycle = Collections.max(executionCycle);
+        System.out.println("Results:");
+        System.out.println("Overall Execution Cycle: " + maxExecutionCycle);
+        processors.forEach(p -> System.out.println("Execution cycles for core " + processors.indexOf(p) + ": " + p.getCycleCount()));
+        processors.forEach(p -> System.out.println("Compute cycles for core " + processors.indexOf(p) + ": " + p.getTotalComputingCycles()));
+        processors.forEach(p -> System.out.println("Number of Load instructions for core " + processors.indexOf(p) + ": " + p.getNumLoad()));
+        processors.forEach(p -> System.out.println("Number of Store instructions for core " + processors.indexOf(p) + ": " + p.getNumStore()));
+        processors.forEach(p -> System.out.println("Number of Idle cycles for core " + processors.indexOf(p) + ": " + p.getTotalIdleCycles()));
+        caches.forEach(c -> System.out.println("Cache miss rate for cache " + c.getId() + ": " + c.getMissRate()));
+        System.out.println("Data traffic on the bus in bytes: ");//todo
+        System.out.println("Number of invalidations on the bus: ");
+        System.out.println("Number of updates sent on the bus: ");
+        System.out.println("Number of accesses to private data: ");
+        System.out.println("Number of accesses to shared data: ");
     }
 }

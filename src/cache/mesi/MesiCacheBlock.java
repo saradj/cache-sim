@@ -22,7 +22,6 @@ public final class MesiCacheBlock extends CacheBlock {
 
     @Override
     public void update(BusEvent busEvent) {
-
     }
 
 }

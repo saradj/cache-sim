@@ -52,12 +52,37 @@ public abstract class Cache implements Clocked {
         return id;
     }
 
+    public int getBlockSize() {
+        return blockSize;
+    }
+
+    public void linkBus(Bus bus){
+        this.bus = bus;
+    }
+    public Bus getBus(){
+        return bus;
+    }
+    public void linkCpu(Cpu p) {
+        this.cpu = p;
+    }
+    public Cpu getCpu(){
+        return cpu;
+    }
+    public void wakeCpu(){
+        cpu.wake();
+    }
+    public abstract boolean cacheHit(int address);
+
     protected int getTag(int address) {
         return address / numLines;
     }
     protected int getLineNumber(int address) {
         return address % numLines;
     }
+    public abstract int getNbCacheMiss();
 
-
+    public double getMissRate() {
+        double missRate = getNbCacheMiss() / getCpu().getInstructionCount();
+        return missRate * 100;
+    }
 }

@@ -2,6 +2,7 @@ package cache.mesi;
 
 
 import bus.BusEvent;
+import bus.DataRequest;
 import bus.Request;
 import cache.Cache;
 import cache.CacheState;
@@ -10,8 +11,9 @@ import cache.instruction.CacheInstructionType;
 import common.Constants;
 
 public final class MesiCache extends Cache {
+    private final MesiCacheBlock[][] cacheBlocks;
+    private int cacheMiss;
 
-    private final MesiCacheBlock[][] cacheBlocks ;
 
     private int currentAddress;
 
@@ -189,12 +191,38 @@ public final class MesiCache extends Cache {
         return null;
     }
 
+
     public boolean hasBlock (int address){
         return this.getBlock(address) != null;
     }
 
-    private int getBlockNumber(int address) {
+
+    @Override
+    public boolean cacheHit(int address) {
+        return getBlockState(address)!=MesiState.INVALID;
+    }
+
+
+    private MesiState getBlockState (int address){
+        MesiCacheBlock cacheBlock =getCacheBlock(address);
+        return cacheBlock==null? MesiState.INVALID: cacheBlock.getMesiState();
+    }
+
+    protected MesiCacheBlock getCacheBlock(int address) {
         int tag = super.getTag(address);
+        int lineNum = super.getLineNumber(address);
+
+        for (int i = 0; i < associativity; i++){
+            if ((cacheBlocks[lineNum][i].getTag() == tag)){
+
+        return cacheBlocks[lineNum][i];
+    }
+}
+return null;
+}
+
+private int getBlockNumber(int address) {        
+int tag = super.getTag(address);
         int lineNum = super.getLineNumber(address);
 
         for (int i = 0; i < associativity; i++){
@@ -204,6 +232,8 @@ public final class MesiCache extends Cache {
         }
         return -1;
     }
+
+
 
     @Override
     public Request getRequest() {
@@ -216,6 +246,9 @@ public final class MesiCache extends Cache {
         }
         this.state = CacheState.WAITING_FOR_BUS_MESSAGE;
         return new Request(id, event, currentAddress, Constants.BUS_MESSAGE_CYCLES,false);
+    }
+    public int getNbCacheMiss() {
+        return cacheMiss;
     }
 
 }

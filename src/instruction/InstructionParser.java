@@ -14,10 +14,10 @@ public final class InstructionParser {
 
     private  InstructionParser (){};
 
-    public static Queue<Instruction> parseInstructions (String fileName){
+    public static Queue<Instruction> parseInstructions (String filePath){
         Queue <Instruction> instructions = new LinkedList<>();
 
-        try (Scanner scanner = new Scanner(new File(fileName))){
+        try (Scanner scanner = new Scanner(new File(filePath))){
             while(scanner.hasNextInt()){
                 InstructionType type = InstructionType.values()[scanner.nextInt()];
                 int otherField = Integer.parseUnsignedInt(scanner.next().substring(2), HEX_RADIX);
@@ -26,7 +26,7 @@ public final class InstructionParser {
             }
         }
         catch (FileNotFoundException e){
-            System.out.println("File" + fileName + "not found");
+            System.out.println("File " + filePath + " not found");
         }
         catch (IllegalStateException e){
             System.out.println ("Queue maximum capacity reached");
